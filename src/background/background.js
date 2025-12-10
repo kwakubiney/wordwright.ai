@@ -64,14 +64,17 @@ async function setupReminderAlarms() {
     }
 
     // Parse times
-    const morningTime = settings.morningTime || '07:00';
-    const eveningTime = settings.eveningTime || '20:00';
+    const morningTime = settings.morningTime;
+    const eveningTime = settings.eveningTime;
 
-    // Create alarms for specific times
-    createDailyAlarm(MORNING_ALARM, morningTime);
-    createDailyAlarm(EVENING_ALARM, eveningTime);
+    // Create alarms for specific times if set
+    if (morningTime) {
+        createDailyAlarm(MORNING_ALARM, morningTime);
+    }
 
-    console.log(`Reminders set for ${morningTime} and ${eveningTime}`);
+    if (eveningTime) {
+        createDailyAlarm(EVENING_ALARM, eveningTime);
+    }
 }
 
 function createDailyAlarm(alarmName, timeString) {
@@ -124,7 +127,7 @@ async function sendReviewNotification() {
         chrome.notifications.create(`lexi_review_${Date.now()}`, {
             type: 'basic',
             iconUrl: chrome.runtime.getURL('src/assets/icon128.png'),
-            title: '📚 Time to practice!',
+            title: 'Time to practice with Lexi 😄',
             message: `Review "${word.word}" - ${dueWords.length} word${dueWords.length > 1 ? 's' : ''} waiting`,
             priority: 2
         });

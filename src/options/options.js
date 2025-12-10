@@ -20,8 +20,8 @@ async function loadSettings() {
     const result = await chrome.storage.local.get(['lexi_settings', 'openrouter_api_key']);
     const settings = result.lexi_settings || {
         remindersEnabled: false,
-        morningTime: '07:00',
-        eveningTime: '20:00'
+        morningTime: '',
+        eveningTime: ''
     };
 
     // Load AI settings
