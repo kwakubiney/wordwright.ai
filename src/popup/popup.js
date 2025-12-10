@@ -1,5 +1,6 @@
 import { StorageService } from '../lib/storage.js';
 import { AIService } from '../lib/ai.js';
+import { DictionaryService } from '../lib/dictionary.js';
 
 // State
 let currentWord = null;
