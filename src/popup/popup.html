@@ -39,9 +39,14 @@
             <p class="hint">Write a sentence using this word.</p>
 
             <!-- Definition Reveal -->
-            <button class="definition-toggle" id="reveal-definition">
-              <span>Show definition</span>
-            </button>
+            <div class="definition-actions">
+              <button class="definition-toggle" id="reveal-definition">
+                <span>Show definition</span>
+              </button>
+              <div class="info-icon" data-tooltip="Peeking reduces your score">
+                ℹ️
+              </div>
+            </div>
             <div class="definition-content" id="definition-container">
               <div class="definition-text" id="definition-display"></div>
             </div>
@@ -52,22 +57,36 @@
           </div>
 
           <div id="feedback-area" class="hidden">
-            <div class="score-container">
-              <div class="score-badge" id="score-badge">
-                <span id="score-value">0</span>
-              </div>
-              <div class="score-label">
-                <strong id="score-title">Score</strong>
-                out of 5
+            <div class="feedback-header" id="feedback-toggle">
+              <span class="feedback-title">Assessment</span>
+              <button class="icon-toggle">▼</button>
+            </div>
+
+            <div class="feedback-content-wrapper" id="feedback-wrapper">
+              <div class="feedback-content">
+                <div class="feedback-scroll">
+                  <div class="score-container">
+                    <div class="score-badge" id="score-badge">
+                      <span id="score-value">0</span>
+                    </div>
+                    <div class="score-label">
+                      <strong id="score-title">Score</strong>
+                      out of 5
+                    </div>
+                  </div>
+                  <p id="reasoning-text" class="reasoning"></p>
+                  <p id="feedback-text"></p>
+                  <div id="suggestions-container" class="hidden">
+                    <p class="suggestions-header">Better examples:</p>
+                    <ul id="suggestions-list"></ul>
+                  </div>
+                </div>
               </div>
             </div>
-            <p id="reasoning-text" class="reasoning"></p>
-            <p id="feedback-text"></p>
-            <div id="suggestions-container" class="hidden">
-              <p class="suggestions-header">Better examples:</p>
-              <ul id="suggestions-list"></ul>
+
+            <div class="feedback-footer">
+              <button id="next-btn">Next Word →</button>
             </div>
-            <button id="next-btn">Next Word →</button>
           </div>
 
           <button id="check-btn" class="primary-btn">Check Sentence</button>

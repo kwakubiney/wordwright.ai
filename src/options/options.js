@@ -16,8 +16,27 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
 });
 
+// Watch for theme changes from popup
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' && changes.lexi_theme) {
+        applyTheme(changes.lexi_theme.newValue);
+    }
+});
+
+function applyTheme(theme) {
+    if (theme === 'light') {
+        document.documentElement.classList.add('light-mode');
+    } else {
+        document.documentElement.classList.remove('light-mode');
+    }
+}
+
 async function loadSettings() {
-    const result = await chrome.storage.local.get(['lexi_settings', 'openrouter_api_key']);
+    const result = await chrome.storage.local.get(['lexi_settings', 'openrouter_api_key', 'lexi_theme']);
+
+    // Apply theme immediately
+    applyTheme(result.lexi_theme || 'dark');
+
     const settings = result.lexi_settings || {
         remindersEnabled: false,
         morningTime: '',
@@ -173,37 +192,8 @@ importBtn.addEventListener('click', async () => {
     }
 });
 
-// Dictionary API lookup (copied from popup.js)
-async function lookupWord(word) {
-    const DICTIONARY_API = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
+// Local lookupWord function removed as it is replaced by DictionaryService
 
-    try {
-        const response = await fetch(DICTIONARY_API);
-        if (!response.ok) return null;
-
-        const data = await response.json();
-        if (!data || data.length === 0) return null;
-
-        const entry = data[0];
-        let definition = '';
-        let example = '';
-
-        if (entry.meanings && entry.meanings.length > 0) {
-            const meaning = entry.meanings[0];
-            const partOfSpeech = meaning.partOfSpeech || '';
-
-            if (meaning.definitions && meaning.definitions.length > 0) {
-                const def = meaning.definitions[0];
-                definition = `(${partOfSpeech}) ${def.definition}`;
-                example = def.example || '';
-            }
-        }
-
-        return { definition, example };
-    } catch (error) {
-        return null;
-    }
-}
 
 function showToast(message) {
     toast.textContent = message;

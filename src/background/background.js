@@ -1,4 +1,5 @@
 import { StorageService } from '../lib/storage.js';
+import { DictionaryService } from '../lib/dictionary.js';
 
 // Alarm names
 const MORNING_ALARM = 'morning_reminder';
@@ -14,6 +15,80 @@ chrome.runtime.onInstalled.addListener(() => {
     // Set up reminder alarms based on saved settings
     setupReminderAlarms();
     updateBadge();
+
+    // Create context menu
+    chrome.contextMenus.create({
+        id: "add-to-lexi",
+        title: "Add \"%s\" to Lexi",
+        contexts: ["selection"]
+    });
+});
+
+// Handle context menu clicks
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId === "add-to-lexi" && info.selectionText) {
+        const word = info.selectionText.trim();
+        if (!word) return;
+
+        // Verify it's a single word (or reasonable length phrase)
+        if (word.split(' ').length > 3) {
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'src/assets/icon128.png',
+                title: 'Too long!',
+                message: 'Please select a single word or short phrase.',
+                priority: 1
+            });
+            return;
+        }
+
+        try {
+            // Check for duplicate
+            const allWords = await StorageService.getAllWords();
+            const exists = allWords.some(w => w.word.toLowerCase() === word.toLowerCase());
+
+            if (exists) {
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: 'src/assets/icon128.png',
+                    title: 'Already saved',
+                    message: `"${word}" is already in your Lexi list.`,
+                    priority: 1
+                });
+                return;
+            }
+
+            // Fetch definition
+            const result = await DictionaryService.lookup(word);
+            const definition = result ? result.definition : '';
+            const example = result ? result.example : '';
+
+            // Add to storage
+            await StorageService.addWord(word, definition, example);
+
+            // Notify user
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'src/assets/icon128.png',
+                title: 'Word Saved!',
+                message: result ? `Added "${word}" with definition.` : `Added "${word}". (No definition found)`,
+                priority: 1
+            });
+
+            // Update badge immediately
+            updateBadge();
+
+        } catch (error) {
+            console.error('Context menu add error:', error);
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'src/assets/icon128.png',
+                title: 'Error',
+                message: 'Could not save word. Please try again.',
+                priority: 1
+            });
+        }
+    }
 });
 
 // Handle messages from options page

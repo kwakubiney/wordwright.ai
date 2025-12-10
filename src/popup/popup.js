@@ -201,7 +201,7 @@ function setupAddForm() {
         lookupBtn.textContent = '...';
 
         try {
-            const result = await lookupWord(word);
+            const result = await DictionaryService.lookup(word);
             if (result) {
                 definitionInput.value = result.definition;
                 exampleInput.value = result.example || '';
@@ -241,47 +241,6 @@ function setupAddForm() {
 
         showToast('Word saved', 'success');
     });
-}
-
-// Dictionary API lookup
-async function lookupWord(word) {
-    const DICTIONARY_API = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
-
-    try {
-        const response = await fetch(DICTIONARY_API);
-
-        if (!response.ok) {
-            return null;
-        }
-
-        const data = await response.json();
-
-        if (!data || data.length === 0) {
-            return null;
-        }
-
-        const entry = data[0];
-
-        // Get the first definition
-        let definition = '';
-        let example = '';
-
-        if (entry.meanings && entry.meanings.length > 0) {
-            const meaning = entry.meanings[0];
-            const partOfSpeech = meaning.partOfSpeech || '';
-
-            if (meaning.definitions && meaning.definitions.length > 0) {
-                const def = meaning.definitions[0];
-                definition = `(${partOfSpeech}) ${def.definition}`;
-                example = def.example || '';
-            }
-        }
-
-        return { definition, example };
-    } catch (error) {
-        console.error('Dictionary API error:', error);
-        return null;
-    }
 }
 
 function setupPracticeFlow() {
@@ -325,11 +284,26 @@ function setupPracticeFlow() {
     nextBtn.addEventListener('click', () => {
         showNextWord();
     });
+
+    // Feedback Toggle
+    const feedbackToggle = document.getElementById('feedback-toggle');
+    const feedbackWrapper = document.getElementById('feedback-wrapper');
+
+    feedbackToggle.addEventListener('click', () => {
+        const isCollapsed = feedbackWrapper.classList.toggle('collapsed');
+        feedbackToggle.querySelector('.icon-toggle').style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+    });
 }
 
 function showFeedback(result) {
     checkBtn.classList.add('hidden');
     feedbackArea.classList.remove('hidden');
+
+    // Ensure expanded
+    const feedbackWrapper = document.getElementById('feedback-wrapper');
+    const feedbackToggle = document.getElementById('feedback-toggle');
+    feedbackWrapper.classList.remove('collapsed');
+    feedbackToggle.querySelector('.icon-toggle').style.transform = 'rotate(0deg)';
 
     // Update score badge with color based on score
     scoreBadge.className = 'score-badge score-' + result.score;
@@ -376,14 +350,14 @@ function setupTheme() {
     chrome.storage.local.get(['lexi_theme'], (result) => {
         const theme = result.lexi_theme || 'dark';
         if (theme === 'light') {
-            document.body.classList.add('light-mode');
+            document.documentElement.classList.add('light-mode');
             themeToggle.textContent = '☀️';
         }
     });
 
     // Toggle handler
     themeToggle.addEventListener('click', () => {
-        const isLight = document.body.classList.toggle('light-mode');
+        const isLight = document.documentElement.classList.toggle('light-mode');
         themeToggle.textContent = isLight ? '☀️' : '🌙';
         chrome.storage.local.set({ lexi_theme: isLight ? 'light' : 'dark' });
     });

@@ -19,6 +19,16 @@
             --error: #ef4444;
         }
 
+        html.light-mode {
+            --primary: #7c3aed;
+            --primary-hover: #8b5cf6;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: rgba(0, 0, 0, 0.1);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -27,7 +37,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            background: var(--bg);
             min-height: 100vh;
             color: var(--text);
             padding: 2rem;
