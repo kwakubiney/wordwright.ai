@@ -137,7 +137,8 @@ function setupDefinitionReveal() {
                     let definition = '';
 
                     // Try dictionary API first
-                    const result = await lookupWord(currentWord.word);
+                    // Try dictionary API first
+                    const result = await DictionaryService.lookup(currentWord.word);
                     if (result && result.definition) {
                         definition = result.definition;
                     } else {

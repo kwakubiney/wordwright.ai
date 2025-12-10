@@ -27,8 +27,11 @@ chrome.runtime.onInstalled.addListener(() => {
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId === "add-to-lexi" && info.selectionText) {
-        const word = info.selectionText.trim();
+        let word = info.selectionText.trim();
         if (!word) return;
+
+        // Capitalize first letter
+        word = word.charAt(0).toUpperCase() + word.slice(1);
 
         // Verify it's a single word (or reasonable length phrase)
         if (word.split(' ').length > 3) {
