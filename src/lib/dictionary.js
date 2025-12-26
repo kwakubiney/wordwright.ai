@@ -1,6 +1,8 @@
 /**
  * Shared service for fetching word definitions
  */
+import { isAIConfigured, generateExample } from './ai.js';
+
 export const DictionaryService = {
     /**
      * Fetch definition from dictionary API
@@ -37,6 +39,27 @@ export const DictionaryService = {
                     const def = meaning.definitions[0];
                     definition = `(${partOfSpeech}) ${def.definition}`;
                     example = def.example || '';
+
+                    // If no example in first definition, search others
+                    if (!example) {
+                        for (const m of entry.meanings) {
+                            for (const d of m.definitions) {
+                                if (d.example) {
+                                    example = d.example;
+                                    break;
+                                }
+                            }
+                            if (example) break;
+                        }
+                    }
+                }
+            }
+
+            // If still no example, try AI generation
+            if (!example && definition) {
+                const aiConfigured = await isAIConfigured();
+                if (aiConfigured) {
+                    example = await generateExample(word, definition);
                 }
             }
 

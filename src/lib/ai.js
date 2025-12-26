@@ -1,6 +1,8 @@
-// OpenRouter API configuration
+// API Endpoints
 const OPENROUTER_API = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'openai/gpt-4o-mini';
+const DEFAULT_OPENROUTER_MODEL = 'openai/gpt-4o-mini';
+const DEFAULT_OLLAMA_MODEL = 'llama3.2';
+const DEFAULT_OLLAMA_ENDPOINT = 'http://localhost:11434';
 
 // Mistake categories for detailed feedback
 export const MISTAKE_CATEGORIES = {
@@ -10,13 +12,137 @@ export const MISTAKE_CATEGORIES = {
     PERFECT_USAGE: 'perfect_usage'
 };
 
-// Get API key from storage
-async function getApiKey() {
+// Provider types
+export const AI_PROVIDERS = {
+    OPENROUTER: 'openrouter',
+    OLLAMA: 'ollama'
+};
+
+// Get AI configuration from storage
+async function getAIConfig() {
     return new Promise((resolve) => {
-        chrome.storage.local.get(['openrouter_api_key'], (result) => {
-            resolve(result.openrouter_api_key || '');
+        chrome.storage.local.get([
+            'ai_provider',
+            'openrouter_api_key',
+            'ollama_endpoint',
+            'ollama_model'
+        ], (result) => {
+            resolve({
+                provider: result.ai_provider || null,
+                openrouterKey: result.openrouter_api_key || '',
+                ollamaEndpoint: result.ollama_endpoint || DEFAULT_OLLAMA_ENDPOINT,
+                ollamaModel: result.ollama_model || DEFAULT_OLLAMA_MODEL
+            });
         });
     });
+}
+
+// Check if AI is properly configured
+export async function isAIConfigured() {
+    const config = await getAIConfig();
+
+    if (!config.provider) return false;
+
+    if (config.provider === AI_PROVIDERS.OPENROUTER) {
+        return !!config.openrouterKey;
+    }
+
+    if (config.provider === AI_PROVIDERS.OLLAMA) {
+        return !!config.ollamaEndpoint;
+    }
+
+    return false;
+}
+
+// Make API call to the configured provider
+async function callAI(messages, jsonMode = true) {
+    const config = await getAIConfig();
+
+    if (!config.provider) {
+        throw new Error('AI provider not configured. Please set up AI in Settings.');
+    }
+
+    if (config.provider === AI_PROVIDERS.OPENROUTER) {
+        if (!config.openrouterKey) {
+            throw new Error('OpenRouter API key not configured. Please add it in Settings.');
+        }
+
+        const response = await fetch(OPENROUTER_API, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${config.openrouterKey}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'https://lexi.ai',
+                'X-Title': 'Lexi.ai'
+            },
+            body: JSON.stringify({
+                model: DEFAULT_OPENROUTER_MODEL,
+                messages,
+                ...(jsonMode && { response_format: { type: 'json_object' } })
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`OpenRouter API error: ${error}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+    }
+
+    if (config.provider === AI_PROVIDERS.OLLAMA) {
+        const endpoint = `${config.ollamaEndpoint}/v1/chat/completions`;
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: config.ollamaModel,
+                messages,
+                stream: false,
+                ...(jsonMode && { format: 'json' })
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`Ollama error: ${error}. Is Ollama running?`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+    }
+
+    throw new Error('Unknown AI provider');
+}
+
+/**
+ * Generate an example sentence for a word
+ * @param {string} word - The word
+ * @param {string} definition - The definition
+ * @returns {Promise<string>}
+ */
+export async function generateExample(word, definition) {
+    try {
+        const content = await callAI([
+            {
+                role: 'system',
+                content: 'You generate natural, helpful example sentences for vocabulary learning. Return ONLY the example sentence, nothing else.'
+            },
+            {
+                role: 'user',
+                content: `Generate a clear, natural example sentence using the word "${word}" (meaning: ${definition}). The sentence should demonstrate the word's meaning in context. Return ONLY the sentence.`
+            }
+        ], false);  // No JSON mode needed
+
+        return content.trim().replace(/^["']|["']$/g, ''); // Remove quotes if present
+    } catch (error) {
+        console.error('Example generation error:', error);
+        return '';
+    }
 }
 
 export const AIService = {
@@ -82,36 +208,10 @@ Return JSON in this exact format:
 }`;
 
         try {
-            const apiKey = await getApiKey();
-            if (!apiKey) {
-                throw new Error('OpenRouter API key not configured. Please add it in Settings.');
-            }
-
-            const response = await fetch(OPENROUTER_API, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': 'https://lexi.ai',
-                    'X-Title': 'Lexi.ai'
-                },
-                body: JSON.stringify({
-                    model: DEFAULT_MODEL,
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userPrompt }
-                    ],
-                    response_format: { type: 'json_object' }
-                })
-            });
-
-            if (!response.ok) {
-                const error = await response.text();
-                throw new Error(`OpenRouter API error: ${error}`);
-            }
-
-            const data = await response.json();
-            const content = data.choices[0].message.content;
+            const content = await callAI([
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ]);
 
             // Parse the JSON response
             const result = JSON.parse(content);
@@ -148,36 +248,10 @@ Return ONLY valid JSON (no markdown, no extra text) in this format:
 }`;
 
         try {
-            const apiKey = await getApiKey();
-            if (!apiKey) {
-                throw new Error('OpenRouter API key not configured. Please add it in Settings.');
-            }
-
-            const response = await fetch(OPENROUTER_API, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': 'https://lexi.ai',
-                    'X-Title': 'Lexi.ai'
-                },
-                body: JSON.stringify({
-                    model: DEFAULT_MODEL,
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userPrompt }
-                    ],
-                    response_format: { type: 'json_object' }
-                })
-            });
-
-            if (!response.ok) {
-                const error = await response.text();
-                throw new Error(`OpenRouter API error: ${error}`);
-            }
-
-            const data = await response.json();
-            const content = data.choices[0].message.content;
+            const content = await callAI([
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ]);
             const result = JSON.parse(content);
 
             return result.definition || '';
@@ -217,31 +291,11 @@ Return ONLY valid JSON:
 }`;
 
         try {
-            const apiKey = await getApiKey();
-            if (!apiKey) throw new Error('API key not configured');
-
-            const response = await fetch(OPENROUTER_API, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': 'https://lexi.ai',
-                    'X-Title': 'Lexi.ai'
-                },
-                body: JSON.stringify({
-                    model: DEFAULT_MODEL,
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userPrompt }
-                    ],
-                    response_format: { type: 'json_object' }
-                })
-            });
-
-            if (!response.ok) throw new Error('API error');
-
-            const data = await response.json();
-            const result = JSON.parse(data.choices[0].message.content);
+            const content = await callAI([
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ]);
+            const result = JSON.parse(content);
 
             // Ensure the correct answer is included and shuffle
             const allOptions = [...result.options];
@@ -286,31 +340,11 @@ Return ONLY valid JSON:
 }`;
 
         try {
-            const apiKey = await getApiKey();
-            if (!apiKey) throw new Error('API key not configured');
-
-            const response = await fetch(OPENROUTER_API, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': 'https://lexi.ai',
-                    'X-Title': 'Lexi.ai'
-                },
-                body: JSON.stringify({
-                    model: DEFAULT_MODEL,
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userPrompt }
-                    ],
-                    response_format: { type: 'json_object' }
-                })
-            });
-
-            if (!response.ok) throw new Error('API error');
-
-            const data = await response.json();
-            const result = JSON.parse(data.choices[0].message.content);
+            const content = await callAI([
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ]);
+            const result = JSON.parse(content);
 
             return {
                 sentence: result.sentence,
@@ -347,31 +381,11 @@ Return ONLY valid JSON:
 }`;
 
         try {
-            const apiKey = await getApiKey();
-            if (!apiKey) throw new Error('API key not configured');
-
-            const response = await fetch(OPENROUTER_API, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': 'https://lexi.ai',
-                    'X-Title': 'Lexi.ai'
-                },
-                body: JSON.stringify({
-                    model: DEFAULT_MODEL,
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userPrompt }
-                    ],
-                    response_format: { type: 'json_object' }
-                })
-            });
-
-            if (!response.ok) throw new Error('API error');
-
-            const data = await response.json();
-            return JSON.parse(data.choices[0].message.content);
+            const content = await callAI([
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ]);
+            return JSON.parse(content);
         } catch (error) {
             console.error('Rewrite generation error:', error);
             throw error;

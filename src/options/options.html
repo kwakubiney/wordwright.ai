@@ -8,25 +8,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #8b5cf6;
-            --primary-hover: #7c3aed;
-            --bg: #0f0f1a;
-            --surface: #1a1a2e;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
-            --success: #10b981;
-            --error: #ef4444;
-        }
-
-        html.light-mode {
             --primary: #7c3aed;
-            --primary-hover: #8b5cf6;
+            --primary-hover: #6d28d9;
             --bg: #f8fafc;
             --surface: #ffffff;
             --text: #1e293b;
             --text-muted: #64748b;
             --border: rgba(0, 0, 0, 0.1);
+            --success: #10b981;
+            --error: #ef4444;
         }
 
         * {
@@ -40,68 +30,116 @@
             background: var(--bg);
             min-height: 100vh;
             color: var(--text);
-            padding: 2rem;
+            padding: 1.5rem;
+            font-size: 0.875rem;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
         h1 {
-            font-size: 1.8rem;
-            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
             background: linear-gradient(135deg, var(--primary), #a78bfa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .section {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .section.full-width {
+            grid-column: 1 / -1;
         }
 
         h2 {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+
+        small {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        small a {
+            color: var(--primary);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .radio-option {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.35rem;
+            cursor: pointer;
+            font-size: 0.8rem;
         }
 
-        p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-
-        /* Toggle Switch */
         .toggle-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .toggle-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .toggle-label {
-            font-weight: 500;
+            font-size: 0.8rem;
         }
 
         .toggle-switch {
             position: relative;
-            width: 48px;
-            height: 26px;
+            width: 40px;
+            height: 22px;
         }
 
         .toggle-switch input {
@@ -119,14 +157,14 @@
             bottom: 0;
             background-color: var(--border);
             transition: 0.3s;
-            border-radius: 26px;
+            border-radius: 22px;
         }
 
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
+            height: 16px;
+            width: 16px;
             left: 3px;
             bottom: 3px;
             background-color: white;
@@ -139,57 +177,17 @@
         }
 
         .toggle-switch input:checked+.toggle-slider:before {
-            transform: translateX(22px);
+            transform: translateX(18px);
         }
 
-        /* Time Inputs */
-        .time-inputs {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .time-row {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .time-row label {
-            width: 120px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        input[type="time"] {
-            padding: 0.5rem 0.75rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.95rem;
-        }
-
-        input[type="time"]:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .disabled-overlay {
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        /* Buttons */
         .btn {
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.15s;
+            font-size: 0.8rem;
         }
 
         .btn-primary {
@@ -212,23 +210,32 @@
 
         .btn-row {
             display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
         }
 
-        /* Toast */
+        .inline-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .inline-group select {
+            flex: 1;
+        }
+
         .toast {
             position: fixed;
-            bottom: 2rem;
+            bottom: 1.5rem;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             background: var(--surface);
             border: 1px solid var(--primary);
             color: var(--text);
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
             opacity: 0;
             transition: all 0.3s ease;
+            font-size: 0.8rem;
         }
 
         .toast.show {
@@ -242,28 +249,83 @@
     <div class="container">
         <h1>Lexi.ai Settings</h1>
 
-        <!-- AI Settings -->
-        <div class="section">
-            <h2>AI Configuration</h2>
-            <p>Enter your OpenRouter API key to power AI feedback. Get a free key at <a
-                    href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></p>
-            <div class="form-group" style="margin-bottom: 1rem;">
-                <label for="api-key">OpenRouter API Key</label>
-                <input type="password" id="api-key" placeholder="sk-or-..."
-                    style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit;">
-                <small style="color: var(--text-dim); margin-top: 0.5rem; display: block;">Your key is stored locally
-                    and never shared.</small>
-            </div>
-            <div class="btn-row">
-                <button class="btn btn-primary" id="save-ai-settings">Save API Key</button>
-            </div>
-        </div>
+        <div class="grid">
+            <!-- AI Settings -->
+            <div class="section full-width">
+                <h2>AI Provider</h2>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="ai-provider" value="openrouter" id="provider-openrouter">
+                        <span><strong>OpenRouter</strong> (Cloud)</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="ai-provider" value="ollama" id="provider-ollama">
+                        <span><strong>Ollama</strong> (Local)</span>
+                    </label>
+                </div>
 
-        <!-- Data Management -->
-        <div class="section">
-            <h2>Data Management</h2>
-            <p>Clear all saved words and progress. This action cannot be undone.</p>
-            <button class="btn btn-danger" id="reset-btn">Reset All Data</button>
+                <!-- OpenRouter Config -->
+                <div id="openrouter-config" class="provider-config">
+                    <div class="form-group">
+                        <label for="api-key">API Key</label>
+                        <input type="password" id="api-key" placeholder="sk-or-...">
+                        <small>Get a free key at <a href="https://openrouter.ai/keys"
+                                target="_blank">openrouter.ai</a></small>
+                    </div>
+                </div>
+
+                <!-- Ollama Config -->
+                <div id="ollama-config" class="provider-config" style="display: none;">
+                    <div class="form-group">
+                        <label for="ollama-endpoint">Endpoint</label>
+                        <input type="text" id="ollama-endpoint" placeholder="http://localhost:11434">
+                    </div>
+                    <div class="form-group">
+                        <label for="ollama-model">Model</label>
+                        <div class="inline-group">
+                            <select id="ollama-model">
+                                <option value="">-- Select --</option>
+                            </select>
+                            <button type="button" class="btn btn-primary" id="fetch-models-btn">Fetch</button>
+                        </div>
+                        <small id="ollama-status">Click Fetch to detect models</small>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="save-ai-settings">Save</button>
+                </div>
+            </div>
+
+            <!-- Reminders -->
+            <div class="section">
+                <h2>Reminders</h2>
+                <div class="toggle-row">
+                    <span>Enable tab reminders</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="reminders-enabled" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="form-group" style="margin-top: 0.75rem;">
+                    <label for="snooze-duration">Snooze duration</label>
+                    <select id="snooze-duration">
+                        <option value="30">30 min</option>
+                        <option value="60" selected>1 hour</option>
+                        <option value="180">3 hours</option>
+                    </select>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="save-reminder-settings">Save</button>
+                </div>
+            </div>
+
+            <!-- Data -->
+            <div class="section">
+                <h2>Data</h2>
+                <small style="margin-bottom: 0.5rem;">Clear all words and progress.</small>
+                <button class="btn btn-danger" id="reset-btn">Reset All Data</button>
+            </div>
         </div>
     </div>
 

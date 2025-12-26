@@ -1,6 +1,7 @@
 import { StorageService } from '../lib/storage.js';
 import { DictionaryService } from '../lib/dictionary.js';
 import { FrequencyService } from '../lib/frequency.js';
+import { isAIConfigured } from '../lib/ai.js';
 
 // State
 let allWordsCache = [];
@@ -22,10 +23,12 @@ const views = {
 };
 
 // Practice View Elements
+const practiceSetupRequired = document.getElementById('practice-setup-required');
 const practiceEmpty = document.getElementById('practice-empty');
 const practiceDue = document.getElementById('practice-due');
 const dueCountEl = document.getElementById('due-count');
 const startSessionBtn = document.getElementById('start-session-btn');
+const gotoSettingsBtn = document.getElementById('goto-settings-btn');
 
 // Toast
 const toast = document.getElementById('toast');
@@ -75,6 +78,18 @@ async function switchTab(tabName) {
 }
 
 async function loadPracticeStatus() {
+    // First check if AI is configured
+    const aiConfigured = await isAIConfigured();
+
+    if (!aiConfigured) {
+        practiceSetupRequired.classList.remove('hidden');
+        practiceEmpty.classList.add('hidden');
+        practiceDue.classList.add('hidden');
+        return;
+    }
+
+    practiceSetupRequired.classList.add('hidden');
+
     const dueWords = await StorageService.getDueWords();
 
     if (dueWords.length === 0) {
@@ -94,6 +109,10 @@ function setupPracticeFlow() {
             url: chrome.runtime.getURL('src/pages/assessment.html')
         });
     });
+
+    gotoSettingsBtn.addEventListener('click', () => {
+        chrome.runtime.openOptionsPage();
+    });
 }
 
 // ============ ADD WORD ============
@@ -102,6 +121,8 @@ function setupAddForm() {
     const wordInput = document.getElementById('word');
     const definitionInput = document.getElementById('definition');
     const exampleInput = document.getElementById('example');
+    const rejectDefinitionBtn = document.getElementById('reject-definition');
+    const rejectExampleBtn = document.getElementById('reject-example');
 
     // Lookup button handler
     lookupBtn.addEventListener('click', async () => {
@@ -119,6 +140,13 @@ function setupAddForm() {
             if (result) {
                 definitionInput.value = result.definition;
                 exampleInput.value = result.example || '';
+
+                // Show reject buttons
+                rejectDefinitionBtn.classList.remove('hidden');
+                if (result.example) {
+                    rejectExampleBtn.classList.remove('hidden');
+                }
+
                 showToast('Definition found', 'success');
             } else {
                 showToast('Word not found.', 'warning');
@@ -130,6 +158,24 @@ function setupAddForm() {
             lookupBtn.disabled = false;
             lookupBtn.textContent = '🔍';
         }
+    });
+
+    // Reject definition handler
+    rejectDefinitionBtn.addEventListener('click', () => {
+        definitionInput.value = '';
+        definitionInput.placeholder = 'Write your own definition...';
+        definitionInput.focus();
+        rejectDefinitionBtn.classList.add('hidden');
+        showToast('Definition cleared', 'success');
+    });
+
+    // Reject example handler
+    rejectExampleBtn.addEventListener('click', () => {
+        exampleInput.value = '';
+        exampleInput.placeholder = 'Write your own example...';
+        exampleInput.focus();
+        rejectExampleBtn.classList.add('hidden');
+        showToast('Example cleared', 'success');
     });
 
     // Form submit handler
@@ -151,6 +197,11 @@ function setupAddForm() {
 
         await StorageService.addWord(word, definition, example);
         addForm.reset();
+
+        // Hide reject buttons after save
+        rejectDefinitionBtn.classList.add('hidden');
+        rejectExampleBtn.classList.add('hidden');
+
         showToast('Word saved', 'success');
     });
 }
@@ -298,7 +349,6 @@ function getTimeAgo(timestamp) {
 async function loadStats() {
     const stats = await StorageService.getStats();
 
-    document.getElementById('streak-value').textContent = stats.streak;
     document.getElementById('total-words').textContent = stats.totalWords;
     document.getElementById('due-words').textContent = stats.dueWords;
     document.getElementById('mastered-words').textContent = stats.masteredWords;

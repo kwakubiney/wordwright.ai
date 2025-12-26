@@ -94,8 +94,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
                 type: 'basic',
                 iconUrl: 'src/assets/icon128.png',
                 title: 'Word Saved!',
-                message: result 
-                    ? `Added "${word}" with definition and context.` 
+                message: result
+                    ? `Added "${word}" with definition and context.`
                     : `Added "${word}" with context. (No definition found)`,
                 priority: 1
             });
@@ -116,31 +116,90 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
 });
 
-// Handle messages from options page
+// Handle messages from options page and content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'UPDATE_ALARMS') {
         setupReminderAlarms();
     }
-});
 
-chrome.alarms.onAlarm.addListener(async (alarm) => {
-    if (alarm.name === BADGE_ALARM) {
-        updateBadge();
-    }
-
-    if (alarm.name === MORNING_ALARM || alarm.name === EVENING_ALARM) {
-        await sendReviewNotification();
-    }
-});
-
-// Handle notification click
-chrome.notifications.onClicked.addListener((notificationId) => {
-    if (notificationId.startsWith('lexi_review_')) {
-        chrome.action.openPopup().catch(() => {
-            chrome.runtime.openOptionsPage();
+    if (message.type === 'OPEN_PRACTICE') {
+        chrome.tabs.create({
+            url: chrome.runtime.getURL('src/pages/assessment.html')
         });
     }
+
+    if (message.type === 'SNOOZE_REMINDER') {
+        const snoozeUntil = Date.now() + (message.minutes * 60 * 1000);
+        chrome.storage.local.set({ lexi_snooze_until: snoozeUntil });
+    }
 });
+
+// New tab reminder trigger
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+    // Small delay to let the page load
+    setTimeout(() => checkAndShowReminder(activeInfo.tabId), 1500);
+});
+
+async function checkAndShowReminder(tabId) {
+    try {
+        // Check if reminders are enabled
+        const {
+            lexi_reminders_enabled,
+            lexi_snooze_until,
+            lexi_last_reminder
+        } = await chrome.storage.local.get([
+            'lexi_reminders_enabled',
+            'lexi_snooze_until',
+            'lexi_last_reminder'
+        ]);
+
+        // Reminders disabled
+        if (lexi_reminders_enabled === false) {
+            return;
+        }
+
+        const now = Date.now();
+
+        // If snoozed, don't show
+        if (lexi_snooze_until && now < lexi_snooze_until) {
+            return;
+        }
+
+        // Cooldown: don't show more than once per 30 minutes
+        const COOLDOWN = 30 * 60 * 1000;
+        if (lexi_last_reminder && (now - lexi_last_reminder) < COOLDOWN) {
+            return;
+        }
+
+        // Check if there are due words
+        const dueWords = await StorageService.getDueWords();
+        if (dueWords.length === 0) {
+            return;
+        }
+
+        // Get tab info to check if it's a valid page
+        const tab = await chrome.tabs.get(tabId);
+        if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+            return;
+        }
+
+        // Send message to show reminder
+        try {
+            await chrome.tabs.sendMessage(tabId, {
+                type: 'SHOW_REMINDER',
+                dueCount: dueWords.length
+            });
+
+            // Update last reminder time
+            chrome.storage.local.set({ lexi_last_reminder: now });
+        } catch (e) {
+            // Content script might not be loaded yet, ignore
+            console.log('Could not show reminder:', e.message);
+        }
+    } catch (error) {
+        console.error('Reminder check error:', error);
+    }
+}
 
 // Update when storage changes
 chrome.storage.onChanged.addListener((changes, namespace) => {

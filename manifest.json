@@ -30,8 +30,12 @@
     },
     "content_scripts": [
         {
-            "matches": ["<all_urls>"],
-            "js": ["src/content/content.js"],
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "src/content/content.js"
+            ],
             "run_at": "document_idle"
         }
     ],
@@ -44,7 +48,9 @@
     "web_accessible_resources": [
         {
             "resources": [
-                "src/assets/*"
+                "src/assets/*",
+                "src/content/reminder.js",
+                "src/pages/*"
             ],
             "matches": [
                 "<all_urls>"

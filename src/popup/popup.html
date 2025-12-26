@@ -37,10 +37,22 @@
     <main>
       <!-- Practice View -->
       <section id="view-practice" class="view active">
+        <!-- AI Setup Required -->
+        <div id="practice-setup-required" class="hidden">
+          <div class="setup-card">
+            <h3>Setup Required</h3>
+            <p class="subtext">To practice, you need to configure an AI provider for feedback and question generation.
+            </p>
+            <p class="subtext" style="margin-top: 0.5rem;">Choose between OpenRouter (cloud) or Ollama (local).</p>
+            <button id="goto-settings-btn" class="primary-btn" style="margin-top: 1rem;">Open Settings</button>
+          </div>
+        </div>
+
         <div id="practice-empty" class="hidden">
-          <p style="font-size: 3rem;">🎉</p>
-          <p class="subtext">No words due for review!</p>
-          <p class="subtext">Add more words to keep learning.</p>
+          <p style="font-size: 2.5rem;">🎉</p>
+          <p style="font-size: 1.1rem; font-weight: 600;">All caught up!</p>
+          <p class="subtext">You're on top of your learning.</p>
+          <p class="subtext">Keep adding words to build your vocabulary.</p>
         </div>
 
         <div id="practice-due" class="hidden">
@@ -76,16 +88,6 @@
       <!-- Stats View -->
       <section id="view-stats" class="view">
         <div class="stats-container">
-          <!-- Streak Card -->
-          <div class="stat-card streak-card">
-            <div class="stat-icon">🔥</div>
-            <div class="stat-content">
-              <div class="stat-value" id="streak-value">0</div>
-              <div class="stat-label">Day Streak</div>
-            </div>
-          </div>
-
-          <!-- Stats Grid -->
           <div class="stats-grid">
             <div class="stat-item">
               <div class="stat-number" id="total-words">0</div>
@@ -131,13 +133,21 @@
           </div>
 
           <div class="form-group">
-            <label for="definition">Definition</label>
+            <div class="label-with-action">
+              <label for="definition">Definition</label>
+              <button type="button" id="reject-definition" class="reject-btn hidden" title="Clear and write your own">✕
+                Not helpful</button>
+            </div>
             <textarea id="definition" required placeholder="Type a word above and click 🔍 to auto-fill..."
               style="height: 100px;"></textarea>
           </div>
 
           <div class="form-group">
-            <label for="example">Example Sentence</label>
+            <div class="label-with-action">
+              <label for="example">Example Sentence</label>
+              <button type="button" id="reject-example" class="reject-btn hidden" title="Clear and write your own">✕ Not
+                helpful</button>
+            </div>
             <textarea id="example" placeholder="Auto-filled when you look up a word..."
               style="height: 80px;"></textarea>
           </div>

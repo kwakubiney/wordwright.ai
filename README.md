@@ -1,18 +1,35 @@
 # Lexi.ai
 
-A smart AI-powered vocabulary tutor extension that helps you master new words through active usage and spaced repetition.
+A Chrome extension that helps you master vocabulary through active practice and spaced repetition.
 
 ## Features
 
-- **Active Learning**: Don't just memorize definitions. Write sentences using new words and get instant AI feedback.
+### Word Collection
+- Add words manually or look up definitions with one click
 
-- **AI Evaluation**: Advanced AI rates your usage, provides corrections, and suggests better examples.
+### Practice Modes
+- **Production**: Write your own sentences using the word
+- **Cloze**: Fill-in-the-blank with semantic distractors
+- **MCQ**: Multiple choice meaning-in-context
+- **Rewrite**: Rephrase sentences using the target word
+- Dedicated assessment page for distraction-free practice
 
-- **Spaced Repetition**: Built-in SRS (SM-2 algorithm) ensures you review words at the perfect time.
+### Spaced Repetition
+- SM-2 algorithm schedules reviews at optimal intervals
+- Words due for review appear in Practice tab
+- Tab reminders notify you when words are due
 
-## Configuration
+### AI Integration
+- Choose between OpenRouter (cloud) or Ollama (local)
+- AI feedback on sentence usage with detailed explanations
+- Privacy-focused local option for offline learning
 
-1. Click the Lexi.ai icon in your toolbar.
-2. Right-click the icon and select **Options**.
-3. Enter your **OpenRouter API Key** to enable the AI features.
-4. Start expanding your vocabulary!
+## Setup
+
+1. Install the extension
+2. Click the Lexi.ai icon in your toolbar
+3. Open Settings (gear icon)
+4. Configure your AI provider:
+   - **OpenRouter**: Enter your API key from openrouter.ai/keys
+   - **Ollama**: Enter your local endpoint and select a model
+5. Start adding words and practicing
