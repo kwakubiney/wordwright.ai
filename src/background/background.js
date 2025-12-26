@@ -61,20 +61,42 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
                 return;
             }
 
+            // Get context from the content script
+            let context = null;
+            try {
+                const response = await chrome.tabs.sendMessage(tab.id, {
+                    type: 'GET_SELECTION_CONTEXT'
+                });
+                if (response) {
+                    context = response;
+                }
+            } catch (contextError) {
+                console.warn('Could not get context from page:', contextError);
+                // Fallback context with just the URL
+                context = {
+                    sentence: info.selectionText,
+                    snippet: '',
+                    sourceUrl: tab.url || '',
+                    pageTitle: tab.title || ''
+                };
+            }
+
             // Fetch definition
             const result = await DictionaryService.lookup(word);
             const definition = result ? result.definition : '';
             const example = result ? result.example : '';
 
-            // Add to storage
-            await StorageService.addWord(word, definition, example);
+            // Add to storage with context
+            await StorageService.addWord(word, definition, example, context);
 
             // Notify user
             chrome.notifications.create({
                 type: 'basic',
                 iconUrl: 'src/assets/icon128.png',
                 title: 'Word Saved!',
-                message: result ? `Added "${word}" with definition.` : `Added "${word}". (No definition found)`,
+                message: result 
+                    ? `Added "${word}" with definition and context.` 
+                    : `Added "${word}" with context. (No definition found)`,
                 priority: 1
             });
 

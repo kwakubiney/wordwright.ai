@@ -240,11 +240,11 @@
 
 <body>
     <div class="container">
-        <h1>⚙️ Lexi.ai Settings</h1>
+        <h1>Lexi.ai Settings</h1>
 
         <!-- AI Settings -->
         <div class="section">
-            <h2>🤖 AI Configuration</h2>
+            <h2>AI Configuration</h2>
             <p>Enter your OpenRouter API key to power AI feedback. Get a free key at <a
                     href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></p>
             <div class="form-group" style="margin-bottom: 1rem;">
@@ -259,48 +259,9 @@
             </div>
         </div>
 
-        <!-- Reminder Settings -->
-        <div class="section">
-            <h2>🔔 Review Reminders</h2>
-            <p>Get notified at specific times to practice your vocabulary. Reminders are disabled by default.</p>
-
-            <div class="toggle-row">
-                <span class="toggle-label">Enable Reminders</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="reminders-enabled">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div id="reminder-times" class="time-inputs disabled-overlay">
-                <div class="time-row">
-                    <label>Morning reminder</label>
-                    <input type="time" id="morning-time">
-                </div>
-                <div class="time-row">
-                    <label>Evening reminder</label>
-                    <input type="time" id="evening-time">
-                </div>
-                <div class="btn-row">
-                    <button class="btn btn-primary" id="save-reminders">Save Reminder Times</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bulk Import -->
-        <div class="section">
-            <h2>📥 Bulk Import</h2>
-            <p>Paste a list of words to import. The app will extract just the words and ignore definitions.</p>
-            <textarea id="import-text" rows="6" placeholder="Paste your list here..."
-                style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); margin-bottom: 1rem; font-family: inherit; resize: vertical;"></textarea>
-            <div class="btn-row">
-                <button class="btn btn-primary" id="import-btn">Import Words</button>
-            </div>
-        </div>
-
         <!-- Data Management -->
         <div class="section">
-            <h2>🗑️ Data Management</h2>
+            <h2>Data Management</h2>
             <p>Clear all saved words and progress. This action cannot be undone.</p>
             <button class="btn btn-danger" id="reset-btn">Reset All Data</button>
         </div>

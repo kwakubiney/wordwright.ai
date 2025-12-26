@@ -16,12 +16,21 @@
     <header>
       <h1>Lexi.ai</h1>
       <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
         <nav>
           <button id="tab-practice" class="active">Practice</button>
           <button id="tab-words">Words</button>
+          <button id="tab-stats">Stats</button>
           <button id="tab-add">Add</button>
         </nav>
+        <button id="settings-btn" class="icon-btn" title="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -29,67 +38,82 @@
       <!-- Practice View -->
       <section id="view-practice" class="view active">
         <div id="practice-empty" class="hidden">
-          <p>🎉</p>
-          <p class="subtext">No words due for review!<br>Add more words to keep learning.</p>
+          <p style="font-size: 3rem;">🎉</p>
+          <p class="subtext">No words due for review!</p>
+          <p class="subtext">Add more words to keep learning.</p>
         </div>
 
-        <div id="practice-content">
-          <div class="card">
-            <h2 id="target-word">...</h2>
-            <p class="hint">Write a sentence using this word.</p>
+        <div id="practice-due" class="hidden">
+          <div class="start-session-card">
+            <div class="due-count-large" id="due-count">0</div>
+            <p class="subtext">words ready for review</p>
+            <button id="start-session-btn" class="primary-btn">Start Practice Session</button>
+          </div>
+        </div>
+      </section>
 
-            <!-- Definition Reveal -->
-            <div class="definition-actions">
-              <button class="definition-toggle" id="reveal-definition">
-                <span>Show definition</span>
-              </button>
-              <div class="info-icon" data-tooltip="Peeking reduces your score">
-                ℹ️
-              </div>
-            </div>
-            <div class="definition-content" id="definition-container">
-              <div class="definition-text" id="definition-display"></div>
+      <!-- Words Library View -->
+      <section id="view-words" class="view">
+        <div class="search-bar" style="margin-bottom: 0.5rem;">
+          <input type="text" id="word-search" placeholder="Search words...">
+        </div>
+        <div class="sort-options">
+          <label>Sort by:</label>
+          <select id="sort-select">
+            <option value="alphabetical">A-Z</option>
+            <option value="frequency">Frequency</option>
+            <option value="date-new">Newest First</option>
+            <option value="date-old">Oldest First</option>
+            <option value="due">Due for Review</option>
+          </select>
+        </div>
+        <div id="words-list" class="words-list"></div>
+        <div id="words-empty" class="hidden" style="text-align: center; margin-top: 2rem;">
+          <p class="subtext">No words saved yet.<br>Add some words to get started!</p>
+        </div>
+      </section>
+
+      <!-- Stats View -->
+      <section id="view-stats" class="view">
+        <div class="stats-container">
+          <!-- Streak Card -->
+          <div class="stat-card streak-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-content">
+              <div class="stat-value" id="streak-value">0</div>
+              <div class="stat-label">Day Streak</div>
             </div>
           </div>
 
-          <div class="input-area">
-            <textarea id="sentence-input" placeholder="Type your sentence here..."></textarea>
-          </div>
-
-          <div id="feedback-area" class="hidden">
-            <div class="feedback-header" id="feedback-toggle">
-              <span class="feedback-title">Assessment</span>
-              <button class="icon-toggle">▼</button>
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-number" id="total-words">0</div>
+              <div class="stat-desc">Total Words</div>
             </div>
-
-            <div class="feedback-content-wrapper" id="feedback-wrapper">
-              <div class="feedback-content">
-                <div class="feedback-scroll">
-                  <div class="score-container">
-                    <div class="score-badge" id="score-badge">
-                      <span id="score-value">0</span>
-                    </div>
-                    <div class="score-label">
-                      <strong id="score-title">Score</strong>
-                      out of 5
-                    </div>
-                  </div>
-                  <p id="reasoning-text" class="reasoning"></p>
-                  <p id="feedback-text"></p>
-                  <div id="suggestions-container" class="hidden">
-                    <p class="suggestions-header">Better examples:</p>
-                    <ul id="suggestions-list"></ul>
-                  </div>
-                </div>
-              </div>
+            <div class="stat-item">
+              <div class="stat-number" id="due-words">0</div>
+              <div class="stat-desc">Due Today</div>
             </div>
-
-            <div class="feedback-footer">
-              <button id="next-btn">Next Word →</button>
+            <div class="stat-item">
+              <div class="stat-number" id="mastered-words">0</div>
+              <div class="stat-desc">Mastered</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" id="reviews-today">0</div>
+              <div class="stat-desc">Reviews Today</div>
             </div>
           </div>
 
-          <button id="check-btn" class="primary-btn">Check Sentence</button>
+          <!-- Progress Section -->
+          <div class="progress-section" style="margin-top: 1rem;">
+            <p style="margin-bottom: 0.5rem; font-weight: 500;">Learning Progress</p>
+            <div style="height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+              <div id="mastery-progress" style="width: 0%; height: 100%; background: var(--primary);"></div>
+            </div>
+            <p class="progress-text" id="progress-text"
+              style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">0% of words mastered</p>
+          </div>
         </div>
       </section>
 
@@ -108,28 +132,20 @@
 
           <div class="form-group">
             <label for="definition">Definition</label>
-            <textarea id="definition" required placeholder="Type a word above and click 🔍 to auto-fill..."></textarea>
+            <textarea id="definition" required placeholder="Type a word above and click 🔍 to auto-fill..."
+              style="height: 100px;"></textarea>
           </div>
 
           <div class="form-group">
             <label for="example">Example Sentence</label>
-            <textarea id="example" placeholder="Auto-filled when you look up a word..."></textarea>
+            <textarea id="example" placeholder="Auto-filled when you look up a word..."
+              style="height: 80px;"></textarea>
           </div>
 
           <button type="submit" class="primary-btn">Save Word</button>
         </form>
       </section>
 
-      <!-- Words Library View -->
-      <section id="view-words" class="view">
-        <div class="search-bar">
-          <input type="text" id="word-search" placeholder="Search words...">
-        </div>
-        <div id="words-list" class="words-list"></div>
-        <div id="words-empty" class="hidden">
-          <p class="subtext">No words saved yet.<br>Add some words to get started!</p>
-        </div>
-      </section>
     </main>
   </div>
 

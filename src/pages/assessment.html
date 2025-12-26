@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lexi.ai Practice Session</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assessment.css">
+</head>
+
+<body>
+    <div class="assessment-container">
+        <header>
+            <div class="logo">Lexi.ai</div>
+            <div class="progress-container">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="session-progress" style="width: 0%"></div>
+                </div>
+                <span id="progress-text">0/0</span>
+            </div>
+            <button id="close-btn" class="icon-btn" title="Close Session">✕</button>
+        </header>
+
+        <main id="assessment-area">
+            <!-- Loading State -->
+            <div id="loading-state" class="center-content">
+                <div class="spinner"></div>
+                <p>Preparing your session...</p>
+            </div>
+
+            <!-- Empty/Finished State -->
+            <div id="finished-state" class="center-content hidden">
+                <div class="completion-icon">🎉</div>
+                <h2>Session Complete!</h2>
+                <p>You've reviewed all your due words.</p>
+                <div class="stats-summary" id="session-stats"></div>
+                <button id="close-session-btn" class="primary-btn">Close Window</button>
+            </div>
+
+            <!-- Active Question Container -->
+            <div id="question-container" class="question-card hidden">
+                <div class="question-header">
+                    <span class="mode-badge" id="mode-badge">Mode</span>
+                    <h1 id="target-word">Word</h1>
+                    <p class="question-instruction" id="instruction">Instruction text</p>
+                </div>
+
+                <div class="question-content" id="question-content">
+                    <!-- Dynamic content injected here -->
+                </div>
+
+                <div class="action-area">
+                    <div id="feedback-display" class="hidden">
+                        <div class="feedback-result" id="feedback-result"></div>
+                        <div class="feedback-detail" id="feedback-detail"></div>
+                    </div>
+
+                    <button id="check-btn" class="primary-btn">Check Answer</button>
+                    <button id="next-btn" class="secondary-btn hidden">Next Word →</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="assessment.js"></script>
+</body>
+
+</html>

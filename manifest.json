@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Lexi.ai - AI Language Tutor",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Learn new words with AI-powered spaced repetition and feedback.",
     "permissions": [
         "storage",
@@ -13,7 +13,8 @@
     ],
     "host_permissions": [
         "http://localhost/*",
-        "https://*/*"
+        "https://*/*",
+        "http://*/*"
     ],
     "action": {
         "default_popup": "src/popup/popup.html",
@@ -27,6 +28,13 @@
         "service_worker": "src/background/background.js",
         "type": "module"
     },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["src/content/content.js"],
+            "run_at": "document_idle"
+        }
+    ],
     "options_page": "src/options/options.html",
     "icons": {
         "16": "src/assets/icon16.png",
