@@ -24,12 +24,25 @@ A Chrome extension that helps you master vocabulary through active practice and 
 - AI feedback on sentence usage with detailed explanations
 - Privacy-focused local option for offline learning
 
-## Setup
+## Installation
 
-1. Install the extension
-2. Click the Lexi.ai icon in your toolbar
-3. Open Settings (gear icon)
-4. Configure your AI provider:
-   - **OpenRouter**: Enter your API key from openrouter.ai/keys
-   - **Ollama**: Enter your local endpoint and select a model
-5. Start adding words and practicing
+### Load as Unpacked Extension (Developer Mode)
+
+1. Download or clone this repository
+   ```
+   git clone https://github.com/kwakubiney/lexi.ai.git
+   ```
+2. Open Chrome and go to `chrome://extensions`
+3. Enable "Developer mode" (toggle in top right)
+4. Click "Load unpacked"
+5. Select the `lexi.ai` folder
+
+The extension icon will appear in your toolbar.
+
+### Configure AI Provider
+
+1. Click the Lexi.ai icon, then the gear icon (Settings)
+2. Choose your AI provider:
+   - **OpenRouter** (cloud): Get a free API key at [openrouter.ai/keys](https://openrouter.ai/keys)
+   - **Ollama** (local): Run `ollama serve` and click "Fetch Models"
+3. Save and start learning
