@@ -54,6 +54,46 @@ export async function isAIConfigured() {
     return false;
 }
 
+// Helper to parse AI responses with fallback for malformed JSON
+function parseAIResponse(content) {
+    try {
+        return JSON.parse(content);
+    } catch (firstError) {
+        console.warn('Initial JSON parse failed, attempting to fix:', firstError.message);
+
+        let fixed = content;
+
+        // Fix 1: Replace fraction scores like "4/5" with just the numerator
+        fixed = fixed.replace(/"score"\s*:\s*(\d+)\/\d+/g, '"score": $1');
+
+        // Fix 2: Fix unquoted string values after colons (common LLM mistake)
+        // Match `: value,` or `: value}` where value is unquoted text
+        fixed = fixed.replace(/:\s*([A-Za-z][^",}\]]*[^"\s,}\]])\s*([,}])/g, ': "$1"$2');
+
+        // Fix 3: Remove trailing commas before } or ]
+        fixed = fixed.replace(/,\s*([}\]])/g, '$1');
+
+        try {
+            return JSON.parse(fixed);
+        } catch (secondError) {
+            console.error('JSON fix attempts failed:', secondError.message);
+            console.error('Raw content:', content);
+
+            // Last resort: extract what we can with regex
+            const scoreMatch = content.match(/"score"\s*:\s*(\d+)/);
+            const feedbackMatch = content.match(/"feedback"\s*:\s*"([^"]+)"/);
+
+            return {
+                score: scoreMatch ? parseInt(scoreMatch[1]) : 3,
+                feedback: feedbackMatch ? feedbackMatch[1] : 'Unable to parse AI feedback.',
+                mistake_category: 'perfect_usage',
+                reasoning: '',
+                suggestions: []
+            };
+        }
+    }
+}
+
 // Make API call to the configured provider
 async function callAI(messages, jsonMode = true) {
     const config = await getAIConfig();
@@ -213,8 +253,8 @@ Return JSON in this exact format:
                 { role: 'user', content: userPrompt }
             ]);
 
-            // Parse the JSON response
-            const result = JSON.parse(content);
+            // Parse with fallback for malformed JSON
+            const result = parseAIResponse(content);
 
             return {
                 score: result.score || 3,

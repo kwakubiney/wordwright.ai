@@ -87,7 +87,7 @@ header {
 }
 
 h1 {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 700;
   background: linear-gradient(135deg, var(--primary), #a78bfa);
   -webkit-background-clip: text;
@@ -100,6 +100,25 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+/* Settings button integrated in nav */
+.nav-settings-btn {
+  background: none;
+  border: none;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+  border-left: 1px solid var(--glass-border);
+  margin-left: 0.15rem;
+}
+
+.nav-settings-btn:hover {
+  color: var(--primary);
+  background: var(--glass);
 }
 
 .icon-btn {
@@ -139,11 +158,11 @@ nav {
 nav button {
   background: none;
   border: none;
-  padding: 0.4rem 0.5rem;
+  padding: 0.3rem 0.4rem;
   cursor: pointer;
   color: var(--text-muted);
   font-weight: 500;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   border-radius: 4px;
   transition: all var(--transition-fast);
 }

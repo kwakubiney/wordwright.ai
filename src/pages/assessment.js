@@ -31,6 +31,7 @@ const elements = {
     feedbackResult: document.getElementById('feedback-result'),
     feedbackDetail: document.getElementById('feedback-detail'),
     checkBtn: document.getElementById('check-btn'),
+    skipBtn: document.getElementById('skip-btn'),
     nextBtn: document.getElementById('next-btn'), // Note: Usually hidden, flow is auto or click to proceed?
     // For this design, let's have Check -> Show Feedback + Next Button
 
@@ -50,6 +51,7 @@ function setupEvents() {
     elements.closeSessionBtn.addEventListener('click', () => window.close());
 
     elements.checkBtn.addEventListener('click', handleCheck);
+    elements.skipBtn.addEventListener('click', handleSkip);
     elements.nextBtn.addEventListener('click', advanceToNext);
 }
 
@@ -87,6 +89,7 @@ async function showQuestion() {
     // Reset state
     clearFeedback();
     elements.checkBtn.classList.remove('hidden');
+    elements.skipBtn.classList.remove('hidden');
     elements.nextBtn.classList.add('hidden');
     elements.checkBtn.disabled = true; // Disabled until interaction
 
@@ -143,6 +146,7 @@ async function renderMode(mode) {
     } catch (err) {
         console.error("Error setting up mode:", err);
         // Fallback to production if generation fails
+        currentMode = REVIEW_MODES.PRODUCTION;  // Update mode so checkHandler uses correct logic
         setupProduction();
         elements.loadingState.classList.add('hidden');
         elements.questionContainer.classList.remove('hidden');
@@ -288,8 +292,55 @@ async function handleCheck() {
     }
 }
 
+async function handleSkip() {
+    // Show the definition and mark as "didn't know"
+    const definition = currentWord.definition || 'No definition available';
+    const example = currentWord.example || '';
+
+    // Build the help content
+    let helpContent = `
+        <div class="skip-help" style="text-align: left;">
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem;">📖 <strong>Definition:</strong></p>
+            <p style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px;">${definition}</p>
+    `;
+
+    if (example) {
+        helpContent += `
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem;">💡 <strong>Example:</strong></p>
+            <p style="font-style: italic; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px;">"${example}"</p>
+        `;
+    }
+
+    if (currentWord.context?.sentence) {
+        helpContent += `
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem;">📍 <strong>Where you found it:</strong></p>
+            <p style="font-style: italic; margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px;">"${currentWord.context.sentence}"</p>
+        `;
+    }
+
+    helpContent += `</div>`;
+
+    elements.questionContent.innerHTML = helpContent;
+
+    // Show feedback with encouragement
+    showFeedback({
+        score: 1,
+        isCorrect: false,
+        title: "No worries! 💪",
+        message: "This word will come back soon. Take a moment to review the definition above."
+    });
+
+    // Process with score 1 - this resets the SRS interval
+    // Word will appear again in ~1 day
+    await StorageService.processReview(currentWord.id, 1);
+    await StorageService.updateLastReviewMode(currentWord.id, currentMode);
+}
+
 function checkCloze() {
     const selectedBtn = elements.questionContent.querySelector('.option-btn.selected');
+    if (!selectedBtn || !currentQuestionData) {
+        throw new Error('No answer selected or question data missing');
+    }
     const answer = selectedBtn.dataset.value;
     const isCorrect = answer.toLowerCase() === currentQuestionData.answer.toLowerCase();
 
@@ -318,6 +369,9 @@ function checkCloze() {
 
 function checkMCQ() {
     const selectedBtn = elements.questionContent.querySelector('.option-btn.selected');
+    if (!selectedBtn || !currentQuestionData) {
+        throw new Error('No answer selected or question data missing');
+    }
     const answer = selectedBtn.dataset.value;
     const isCorrect = answer === currentQuestionData.correctAnswer;
 
@@ -340,38 +394,83 @@ async function checkProduction() {
     const input = document.getElementById('answer-input');
     const sentence = input.value;
 
-    const result = await AIService.evaluateSentence(
-        currentWord.word,
-        currentWord.definition,
-        sentence,
-        currentWord.context
-    );
+    try {
+        const result = await AIService.evaluateSentence(
+            currentWord.word,
+            currentWord.definition,
+            sentence,
+            currentWord.context
+        );
 
-    return {
-        score: result.score,
-        isCorrect: result.score >= 3,
-        title: getTitleForScore(result.score),
-        message: result.feedback
-    };
+        return {
+            score: result.score,
+            isCorrect: result.score >= 3,
+            title: getTitleForScore(result.score),
+            message: result.feedback
+        };
+    } catch (error) {
+        console.error('AI evaluation failed, using self-grade:', error);
+        // Fallback to self-grading when AI is unavailable
+        return await showSelfGradeDialog(sentence);
+    }
 }
 
 async function checkRewrite() {
     const input = document.getElementById('answer-input');
     const sentence = input.value;
 
-    const result = await AIService.evaluateSentence(
-        currentWord.word,
-        currentWord.definition,
-        sentence,
-        currentWord.context
-    );
+    try {
+        const result = await AIService.evaluateSentence(
+            currentWord.word,
+            currentWord.definition,
+            sentence,
+            currentWord.context
+        );
 
-    return {
-        score: result.score,
-        isCorrect: result.score >= 3,
-        title: getTitleForScore(result.score),
-        message: result.feedback
-    };
+        return {
+            score: result.score,
+            isCorrect: result.score >= 3,
+            title: getTitleForScore(result.score),
+            message: result.feedback
+        };
+    } catch (error) {
+        console.error('AI evaluation failed, using self-grade:', error);
+        return await showSelfGradeDialog(sentence);
+    }
+}
+
+// Self-grading dialog when AI is unavailable
+async function showSelfGradeDialog(userSentence) {
+    return new Promise((resolve) => {
+        elements.questionContent.innerHTML = `
+            <div class="self-grade-container">
+                <p style="margin-bottom: 0.5rem; color: var(--text-muted);">⚠️ AI unavailable. Please rate your own answer:</p>
+                <div class="user-sentence" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-style: italic;">
+                    "${userSentence}"
+                </div>
+                <p style="margin-bottom: 0.5rem;">Did you use <strong>"${currentWord.word}"</strong> correctly?</p>
+                <div class="self-grade-options" style="display: flex; gap: 0.5rem;">
+                    <button class="grade-btn" data-score="5" style="flex: 1; padding: 0.75rem; border: none; border-radius: 8px; background: var(--success); color: white; cursor: pointer;">✓ Correct</button>
+                    <button class="grade-btn" data-score="3" style="flex: 1; padding: 0.75rem; border: none; border-radius: 8px; background: var(--warning); color: white; cursor: pointer;">~ Unsure</button>
+                    <button class="grade-btn" data-score="1" style="flex: 1; padding: 0.75rem; border: none; border-radius: 8px; background: var(--error); color: white; cursor: pointer;">✗ Wrong</button>
+                </div>
+            </div>
+        `;
+
+        elements.checkBtn.classList.add('hidden');
+
+        elements.questionContent.querySelectorAll('.grade-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const score = parseInt(btn.dataset.score);
+                resolve({
+                    score,
+                    isCorrect: score >= 3,
+                    title: score >= 5 ? "Self-rated: Correct" : score >= 3 ? "Self-rated: Partial" : "Self-rated: Needs work",
+                    message: "AI feedback unavailable. Your self-assessment was recorded."
+                });
+            });
+        });
+    });
 }
 
 function getTitleForScore(score) {
@@ -383,6 +482,7 @@ function getTitleForScore(score) {
 
 function showFeedback(result) {
     elements.checkBtn.classList.add('hidden');
+    elements.skipBtn.classList.add('hidden');
     elements.checkBtn.textContent = "Check Answer"; // Reset text
     elements.nextBtn.classList.remove('hidden');
 

@@ -64,7 +64,7 @@ header {
 
 .logo {
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: var(--primary);
     letter-spacing: -0.025em;
 }
@@ -345,6 +345,25 @@ main {
 
 .secondary-btn:hover {
     border-color: var(--text-muted);
+}
+
+/* Skip/Don't Know Button */
+.skip-btn {
+    background-color: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
+}
+
+.skip-btn:hover {
+    color: var(--text);
+    background-color: var(--surface-border);
 }
 
 /* Feedback */
