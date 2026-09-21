@@ -23,9 +23,7 @@ A Chrome extension that helps you master vocabulary through active practice and 
 - Tab reminders notify you when words are due
 
 ### AI Integration
-- Choose between OpenRouter (cloud) or Ollama (local)
-- AI feedback on sentence usage with detailed explanations
-- Privacy-focused local option for offline learning
+- Jev makes typed sentence-usage judgments directly, with deterministic teaching feedback
 
 ## Installation
 
@@ -42,10 +40,10 @@ A Chrome extension that helps you master vocabulary through active practice and 
 
 The extension icon will appear in your toolbar.
 
-### Configure AI Provider
+### Configure Jev
 
 1. Click the Wordwright.ai icon, then the gear icon (Settings)
-2. Choose your AI provider:
-   - **OpenRouter** (cloud): Get a free API key at [openrouter.ai/keys](https://openrouter.ai/keys)
-   - **Ollama** (local): Run `ollama serve` and click "Fetch Models"
+2. Add a **TypeSafe API key** for Jev from [console.typesafe.ai](https://console.typesafe.ai)
 3. Save and start learning
+
+Sentence evaluation uses Jev directly. Jev returns the score, correctness signals, probabilities, and confidence; the extension supplies short deterministic feedback from that judgment. If Jev reports an uncertain result, the extension asks the learner to self-grade instead of silently guessing.

@@ -252,44 +252,10 @@
         <div class="grid">
             <!-- AI Settings -->
             <div class="section full-width">
-                <h2>AI Provider</h2>
-                <div class="radio-group">
-                    <label class="radio-option">
-                        <input type="radio" name="ai-provider" value="openrouter" id="provider-openrouter">
-                        <span><strong>OpenRouter</strong> (Cloud)</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="ai-provider" value="ollama" id="provider-ollama">
-                        <span><strong>Ollama</strong> (Local)</span>
-                    </label>
-                </div>
-
-                <!-- OpenRouter Config -->
-                <div id="openrouter-config" class="provider-config">
-                    <div class="form-group">
-                        <label for="api-key">API Key</label>
-                        <input type="password" id="api-key" placeholder="sk-or-...">
-                        <small>Get a free key at <a href="https://openrouter.ai/keys"
-                                target="_blank">openrouter.ai</a></small>
-                    </div>
-                </div>
-
-                <!-- Ollama Config -->
-                <div id="ollama-config" class="provider-config" style="display: none;">
-                    <div class="form-group">
-                        <label for="ollama-endpoint">Endpoint</label>
-                        <input type="text" id="ollama-endpoint" placeholder="http://localhost:11434">
-                    </div>
-                    <div class="form-group">
-                        <label for="ollama-model">Model</label>
-                        <div class="inline-group">
-                            <select id="ollama-model">
-                                <option value="">-- Select --</option>
-                            </select>
-                            <button type="button" class="btn btn-primary" id="fetch-models-btn">Fetch</button>
-                        </div>
-                        <small id="ollama-status">Click Fetch to detect models</small>
-                    </div>
+                <div class="form-group" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <label for="typesafe-api-key"><strong>TypeSafe API Key</strong> (Jev)</label>
+                    <input type="password" id="typesafe-api-key" placeholder="TypeSafe API key">
+                    <small>Jev handles sentence grading and returns the score, category, probabilities, and confidence. Get a key at <a href="https://console.typesafe.ai" target="_blank">console.typesafe.ai</a>.</small>
                 </div>
 
                 <div class="btn-row">

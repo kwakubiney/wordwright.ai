@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wordwright Jev Architecture</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; padding: 2rem; background: #0f172a; color: #e2e8f0; font: 15px/1.5 system-ui, sans-serif; }
+    main { max-width: 1600px; margin: auto; }
+    h1 { color: #c4b5fd; font-size: 1.5rem; }
+    .mermaid { overflow: auto; padding: 1rem; background: #111827; border: 1px solid #334155; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Wordwright + Jev: input/output contract</h1>
+    <pre class="mermaid">
+flowchart TD
+    A[Wordwright Settings] --> S1[(chrome.storage.local)]
+    S1 --> C[AI configuration]
+    C --> C1[TypeSafe API key]
+    U[Learner] --> Q[Assessment UI]
+    Q --> Q1[Target word]
+    Q --> Q2[Definition]
+    Q --> Q3[Exercise mode]
+    Q --> Q4[Learner sentence]
+    Q4 --> E[evaluateSentence]
+    Q1 --> E
+    Q2 --> E
+    Q3 --> E
+    E --> JREQ
+    subgraph JREQ[Request to Jev]
+      JR1[POST /v1/systemone]
+      JR2[Bearer TypeSafe key]
+      JR3[state: word, definition, sentence, context]
+      JR4[questions: score + 3 nouls]
+    end
+    JREQ --> JE[Jev System One]
+    subgraph JE[Jev]
+      JE1[Typed decision model]
+      JE2[Probabilities]
+      JE3[Confidence]
+      JE4[No prose generation]
+    end
+    JE --> JRES
+    subgraph JRES[Jev response]
+      JR5[usage_quality: score 0-4]
+      JR6[meaning_correct: noul 0-1]
+      JR7[grammar_correct: noul 0-1]
+      JR8[natural_usage: noul 0-1]
+    end
+    JRES --> V[Wordwright validation]
+    V -->|Malformed or uncertain| F[Self-grade dialog]
+    V -->|Valid and confident| D[Deterministic mapping]
+    D --> D1[App score: round raw score + 1]
+    D --> D2[Category: meaning, grammar, naturalness]
+    D --> P[Authoritative judgment]
+    P --> TXT[Deterministic teaching feedback]
+    TXT --> UI[Feedback UI]
+    P --> SR[SRS processing]
+    SR --> H[Review history / next review]
+    </pre>
+  </main>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'strict' });
+  </script>
+</body>
+</html>

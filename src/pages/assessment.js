@@ -410,8 +410,7 @@ async function checkProduction() {
         };
     } catch (error) {
         console.error('AI evaluation failed, using self-grade:', error);
-        // Fallback to self-grading when AI is unavailable
-        return await showSelfGradeDialog(sentence);
+        return await showSelfGradeDialog(sentence, getSelfGradeReason(error));
     }
 }
 
@@ -435,16 +434,27 @@ async function checkRewrite() {
         };
     } catch (error) {
         console.error('AI evaluation failed, using self-grade:', error);
-        return await showSelfGradeDialog(sentence);
+        return await showSelfGradeDialog(sentence, getSelfGradeReason(error));
     }
 }
 
-// Self-grading dialog when AI is unavailable
-async function showSelfGradeDialog(userSentence) {
+function getSelfGradeReason(error) {
+    const message = error?.message || '';
+    if (message.includes('Jev was not confident') || message.includes('Jev was uncertain')) {
+        return 'Jev was not confident enough to grade this answer automatically.';
+    }
+    if (message.includes('TypeSafe API key not configured')) {
+        return 'Jev grading is not configured. Add a TypeSafe API key in Settings.';
+    }
+    return 'Automatic grading is unavailable right now.';
+}
+
+// Self-grading dialog when Jev cannot make a confident judgment
+async function showSelfGradeDialog(userSentence, reason = 'Automatic grading is unavailable right now.') {
     return new Promise((resolve) => {
         elements.questionContent.innerHTML = `
             <div class="self-grade-container">
-                <p style="margin-bottom: 0.5rem; color: var(--text-muted);">⚠️ AI unavailable. Please rate your own answer:</p>
+                <p style="margin-bottom: 0.5rem; color: var(--text-muted);">⚠️ ${reason} Please rate your own answer:</p>
                 <div class="user-sentence" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-style: italic;">
                     "${userSentence}"
                 </div>
